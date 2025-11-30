@@ -19,12 +19,12 @@
 **目標**: 完成基本的「文字內容」遷移功能。
 
 3. **內容解析器 (Content Parser)**:
-   - [ ] 開發 `ContentExtractor` 類別，將每一頁的結構 (標題、內文列表) 轉換為結構化資料 (JSON/Dict)。
+   - [V] 開發 `ContentExtractor` 類別，將每一頁的結構 (標題、內文列表) 轉換為結構化資料 (JSON/Dict)。
 4. **合成引擎 (Composition Engine)**:
-   - [ ] 開發 `SlideGenerator` 類別。
-   - [ ] 實作「標題對標題」(Title-to-Title) 的映射邏輯。
-   - [ ] 實作「內文對內文」(Body-to-Body) 的映射邏輯。
-   - [ ] 處理基本的文字格式保留 (粗體、斜體)。
+   - [V] 開發 `SlideGenerator` 類別。
+   - [V] 實作「標題對標題」(Title-to-Title) 的映射邏輯。
+   - [V] 實作「內文對內文」(Body-to-Body) 的映射邏輯。
+   - [V] 處理基本的文字格式保留 (粗體、斜體)。
 
 ## 第三階段：智慧映射與版面選擇 (Phase 3: Intelligent Mapping)
 

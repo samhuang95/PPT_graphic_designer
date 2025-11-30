@@ -107,3 +107,25 @@
   - 新增 \poc.py\: 包含三個 POC 任務的實作代碼。
   - 修改 \spec/development_plan.md\: 勾選 POC 相關任務。
   - 修改 \log.md\: 新增本條記錄。
+
+
+## 2025-12-01 00:15:57
+
+### 任務：完成第二階段核心邏輯開發 (Complete Phase 2 Core Logic)
+
+- **Prompt 概述**:
+  使用者要求繼續完成第二階段開發，並回報前次生成的 \output_phase2.pptx\ 損毀無法開啟。
+
+- **結果概述**:
+  - 實作 \ContentExtractor\ (內容解析) 與 \SlideGenerator\ (合成引擎)。
+  - 發現並修復了 \SlideGenerator\ 中因強制刪除範本投影片導致的檔案損毀問題 (Zip Duplicate Name Error)。
+  - 修正策略：暫時保留範本原始投影片，將新生成的投影片附加在後，確保輸出檔案結構完整。
+  - 成功生成可開啟的 \output_phase2.pptx\。
+  - 更新開發計畫表，標記第二階段任務為已完成。
+
+- **檔案變更**:
+  - 新增 \src/content_extractor.py\: 實作內容提取邏輯。
+  - 新增 \src/slide_generator.py\: 實作投影片生成邏輯 (已修復損毀 Bug)。
+  - 新增 \main_phase2.py\: 第二階段整合測試腳本。
+  - 修改 \spec/development_plan.md\: 勾選第二階段相關任務。
+  - 修改 \log.md\: 新增本條記錄。
