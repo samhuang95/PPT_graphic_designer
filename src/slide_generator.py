@@ -1,4 +1,5 @@
 from pptx import Presentation
+from pptx.enum.text import MSO_AUTO_SIZE
 
 class SlideGenerator:
     def __init__(self, template_path):
@@ -11,29 +12,55 @@ class SlideGenerator:
         for i, layout in enumerate(self.prs.slide_layouts):
             self.layout_map[layout.name] = i
 
-        # Define default mappings (can be improved in Phase 3)
-        # We look for standard names or fall back to indices
+        # Define mappings
         self.TITLE_LAYOUT_IDX = self.layout_map.get("TITLE", 0)
-        self.CONTENT_LAYOUT_IDX = self.layout_map.get("TITLE_AND_BODY", 1)
+        self.SECTION_HEADER_LAYOUT_IDX = self.layout_map.get("SECTION_HEADER", 1)
+        self.CONTENT_LAYOUT_IDX = self.layout_map.get("TITLE_AND_BODY", 2)
+        self.TWO_CONTENT_LAYOUT_IDX = self.layout_map.get("TITLE_AND_TWO_COLUMNS", 3)
 
-        print(f"  - Title Layout Index: {self.TITLE_LAYOUT_IDX}")
-        print(f"  - Content Layout Index: {self.CONTENT_LAYOUT_IDX}")
+        print(f"  - Title Layout: {self.TITLE_LAYOUT_IDX}")
+        print(f"  - Section Header: {self.SECTION_HEADER_LAYOUT_IDX}")
+        print(f"  - Content Layout: {self.CONTENT_LAYOUT_IDX}")
+        print(f"  - Two Content Layout: {self.TWO_CONTENT_LAYOUT_IDX}")
+
+    def _select_layout_and_split_content(self, index, slide_data):
+        """
+        Phase 3: Intelligent Mapping Logic
+        Returns: (layout_index, [content_group_1, content_group_2, ...])
+        """
+        title = slide_data.get("title", "")
+        body = slide_data.get("body", [])
+
+        # Rule 1: First slide -> Title Slide
+        if index == 0:
+            # Title slide usually has subtitle in the second placeholder
+            return self.TITLE_LAYOUT_IDX, [body]
+
+        # Rule 2: Only Title (no body) -> Section Header
+        if not body:
+            return self.SECTION_HEADER_LAYOUT_IDX, []
+
+        # Rule 3: Title + Many items -> Two Content
+        # Heuristic: If more than 4 paragraphs (lowered threshold for demo), split into two columns
+        if len(body) > 4:
+            mid = (len(body) + 1) // 2
+            col1 = body[:mid]
+            col2 = body[mid:]
+            print(f"    [Smart Layout] Slide {index+1}: Detected {len(body)} paragraphs -> Using Two Columns")
+            return self.TWO_CONTENT_LAYOUT_IDX, [col1, col2]
+
+        # Rule 4: Default -> Title and Content
+        return self.CONTENT_LAYOUT_IDX, [body]
 
     def generate(self, slides_data, output_path):
         print(f"Generating presentation to: {output_path}")
 
-        # [Fix] Clearing existing slides caused file corruption (Duplicate name error).
-        # For now, we append new slides after the template slides to ensure file validity.
-        # self._clear_existing_slides()
+        # Store original slide count to remove them later
+        original_slide_count = len(self.prs.slides)
 
         for i, slide_data in enumerate(slides_data):
-            # Simple Rule-based Mapping (Phase 2 level)
-            # If it's the first slide, use Title Layout
-            # Otherwise use Content Layout
-            if i == 0:
-                layout_idx = self.TITLE_LAYOUT_IDX
-            else:
-                layout_idx = self.CONTENT_LAYOUT_IDX
+            # Phase 3: Use intelligent selection
+            layout_idx, content_groups = self._select_layout_and_split_content(i, slide_data)
 
             slide_layout = self.prs.slide_layouts[layout_idx]
             slide = self.prs.slides.add_slide(slide_layout)
@@ -42,37 +69,44 @@ class SlideGenerator:
             if slide_data["title"] and slide.shapes.title:
                 slide.shapes.title.text = slide_data["title"]
 
-            # 2. Set Body
-            # Find the body placeholder (usually index 1, or the one that is not title)
-            body_placeholder = None
-            for shape in slide.placeholders:
-                # Placeholder indices: 0 is usually Title, 1 is Body/Subtitle
-                # We can also check element.ph_idx
-                if shape.placeholder_format.idx > 0:
-                    body_placeholder = shape
-                    break
+            # 2. Set Body (handling multiple placeholders for columns)
+            # Find all body placeholders (idx > 0)
+            body_placeholders = [shape for shape in slide.placeholders if shape.placeholder_format.idx > 0]
+            # Sort by idx to ensure we fill left to right (usually idx 1 is left, idx 2 is right)
+            body_placeholders.sort(key=lambda x: x.placeholder_format.idx)
 
-            if body_placeholder and slide_data["body"]:
-                tf = body_placeholder.text_frame
-                tf.clear() # Clear default placeholder text
+            for ph_idx, content_group in enumerate(content_groups):
+                if ph_idx < len(body_placeholders):
+                    ph = body_placeholders[ph_idx]
+                    tf = ph.text_frame
+                    tf.clear()
 
-                for p_idx, para_data in enumerate(slide_data["body"]):
-                    p = tf.add_paragraph()
-                    # If it's the very first paragraph of the text frame, add_paragraph adds a second one?
-                    # No, clear() removes all text but leaves one empty paragraph usually?
-                    # Actually tf.clear() removes all text.
-                    # But tf.paragraphs[0] exists.
-                    # Let's handle the first paragraph separately or just use the list.
-                    if p_idx == 0 and len(tf.paragraphs) == 1 and tf.paragraphs[0].text == "":
-                        p = tf.paragraphs[0]
+                    # Phase 3: Overflow Handling - Auto Fit
+                    tf.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
 
-                    for run_data in para_data:
-                        run = p.add_run()
-                        run.text = run_data["text"]
-                        if run_data["bold"]:
-                            run.font.bold = True
-                        if run_data["italic"]:
-                            run.font.italic = True
+                    for p_idx, para_data in enumerate(content_group):
+                        p = tf.add_paragraph()
+                        # Handle the empty first paragraph issue if needed,
+                        # but add_paragraph() after clear() usually works fine if we don't mind one empty line or we access paragraphs[0]
+                        # Let's stick to add_paragraph for simplicity, or reuse the first one if it's empty.
+                        if p_idx == 0 and len(tf.paragraphs) == 1 and not tf.paragraphs[0].text:
+                            p = tf.paragraphs[0]
+
+                        for run_data in para_data:
+                            run = p.add_run()
+                            run.text = run_data["text"]
+                            if run_data["bold"]:
+                                run.font.bold = True
+                            if run_data["italic"]:
+                                run.font.italic = True
+
+        # Remove original slides after generation to avoid corruption
+        if original_slide_count > 0:
+            xml_slides = self.prs.slides._sldIdLst
+            for _ in range(original_slide_count):
+                if len(xml_slides) > 0:
+                    xml_slides.remove(xml_slides[0])
+            print(f"Removed {original_slide_count} original template slides.")
 
         self.prs.save(output_path)
         print("Generation complete.")

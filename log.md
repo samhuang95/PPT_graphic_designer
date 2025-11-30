@@ -129,3 +129,47 @@
   - 新增 \main_phase2.py\: 第二階段整合測試腳本。
   - 修改 \spec/development_plan.md\: 勾選第二階段相關任務。
   - 修改 \log.md\: 新增本條記錄。
+
+
+## 2025-12-01 00:22:27
+
+### 任務：完成第三階段智慧映射與版面選擇 (Complete Phase 3 Intelligent Mapping)
+
+- **Prompt 概述**:
+  使用者確認第二階段結果無誤，要求繼續完成第三階段開發。
+
+- **結果概述**:
+  - 實作智慧版面選擇邏輯 (\_select_layout_and_split_content\):
+    - 第一頁自動使用 Title Slide。
+    - 無內文頁面使用 Section Header。
+    - 內文段落數 > 4 (測試閾值) 自動切換為 Two Content Layout 並分欄。
+    - 其餘使用標準 Title and Content Layout。
+  - 實作溢出處理：對內文佔位符啟用 \MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE\。
+  - 執行 \main_phase3.py\ 測試成功，Slide 3 (5 段落) 成功觸發雙欄模式。
+  - 更新開發計畫表，標記第三階段任務為已完成。
+
+- **檔案變更**:
+  - 修改 \src/slide_generator.py\: 新增版面選擇與分欄邏輯、自動縮放設定。
+  - 新增 \main_phase3.py\: 第三階段整合測試腳本。
+  - 修改 \spec/development_plan.md\: 勾選第三階段相關任務。
+  - 修改 \log.md\: 新增本條記錄。
+
+
+## 2025-12-01 00:29:45
+
+### 任務：修正輸出檔案包含範本舊投影片的問題 (Fix output containing template slides)
+
+- **Prompt 概述**:
+  使用者要求 \output_phase3.pptx\ 不應包含 \ef.pptx\ 的原始內容，只應保留新生成的映射結果。
+
+- **結果概述**:
+  - 修改 \SlideGenerator.generate\ 邏輯：
+    1. 先記錄原始投影片數量 (\original_slide_count\)。
+    2. 執行新投影片生成 (Append 模式)。
+    3. 生成完畢後，從列表頭部移除 \original_slide_count\ 張投影片。
+  - 此方法成功避開了直接清空投影片導致的檔案損毀問題，同時達成了「只保留新內容」的需求。
+  - 執行測試成功，Log 顯示 \Removed 50 original template slides\。
+
+- **檔案變更**:
+  - 修改 \src/slide_generator.py\: 實作「先生成、後移除」的邏輯。
+  - 修改 \log.md\: 新增本條記錄。
