@@ -93,13 +93,16 @@
 ### 任務：完成 POC 腳本開發 (Complete POC Script Development)
 
 - **Prompt 概述**:
-  使用者要求依據開發任務進行開發，使用 \input.pptx\ 與 \ef.pptx\ 進行測試，並輸出為 \output.pptx\。
+  使用者要求依據開發任務進行開發，使用 \input.pptx\ 與 \
+ef.pptx\ 進行測試，並輸出為 \output.pptx\。
 
 - **結果概述**:
   - 建立 \poc.py\ 腳本，實作了三個 POC 任務：
     1. 讀取 \input.pptx\ 並印出內容。
-    2. 讀取 \ef.pptx\ 並列出所有版面配置。
-    3. 使用 \ef.pptx\ 的第一個版面建立 \output.pptx\ 並填入測試文字。
+    2. 讀取 \
+ef.pptx\ 並列出所有版面配置。
+    3. 使用 \
+ef.pptx\ 的第一個版面建立 \output.pptx\ 並填入測試文字。
   - 執行腳本成功，驗證了 \python-pptx\ 的基本讀寫功能。
   - 更新開發計畫表，標記 POC 任務為已完成。
 
@@ -160,7 +163,8 @@
 ### 任務：修正輸出檔案包含範本舊投影片的問題 (Fix output containing template slides)
 
 - **Prompt 概述**:
-  使用者要求 \output_phase3.pptx\ 不應包含 \ef.pptx\ 的原始內容，只應保留新生成的映射結果。
+  使用者要求 \output_phase3.pptx\ 不應包含 \
+ef.pptx\ 的原始內容，只應保留新生成的映射結果。
 
 - **結果概述**:
   - 修改 \SlideGenerator.generate\ 邏輯：
@@ -173,3 +177,53 @@
 - **檔案變更**:
   - 修改 \src/slide_generator.py\: 實作「先生成、後移除」的邏輯。
   - 修改 \log.md\: 新增本條記錄。
+
+
+## 2025-12-01 00:39:19
+
+### 任務：準備 AI 整合環境 (Prepare AI Integration Environment)
+
+- **Prompt 概述**:
+  使用者指定使用 Gemini 3 Pro 作為 LLM，請求建立 .env 檔案。
+
+- **結果概述**:
+  - 安裝 \google-generativeai\ 與 \python-dotenv\ 套件。
+  - 建立 \.env\ 檔案模板，包含 \GEMINI_API_KEY\ 欄位。
+  - 將 \.env\ 加入 \.gitignore\ 以確保資安。
+
+- **檔案變更**:
+  - 新增 \.env\: API Key 設定檔模板。
+  - 修改 \.gitignore\: 忽略 .env 檔案。
+  - 修改 \log.md\: 新增本條記錄。
+
+
+## 2025-12-01 00:45:00
+
+### 任務：修正 AI 套件安裝問題 (Fix AI Package Installation)
+
+- **Prompt 概述**:
+  使用者回報 \pip list\ 未顯示 \google-generativeai\ 與 \python-dotenv\，指出前次安裝失敗。
+
+- **結果概述**:
+  - 確認前次工具呼叫可能未正確指向虛擬環境。
+  - 使用完整路徑 \D:\PPT_graphic_designer\venv\Scripts\pip.exe\ 顯式執行安裝指令。
+  - 確認套件已成功安裝。
+
+- **檔案變更**:
+  - 修改 \log.md\: 新增本條記錄。
+
+
+## 2025-12-13 15:46:23
+
+### 任務：設定開發環境策略 (Set Development Environment Policy)
+
+- **Prompt 概述**:
+  使用者指示後續開發與測試一律使用 venv 環境。
+
+- **結果概述**:
+  - 確認接收指令。
+  - 鎖定 Python 直譯器路徑為 `d:\PPT_graphic_designer\venv\Scripts\python.exe`。
+
+- **檔案變更**:
+  - 修改 `log.md`: 新增本條記錄。
+
